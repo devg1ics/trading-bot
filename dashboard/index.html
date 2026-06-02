@@ -250,10 +250,10 @@ function renderEquityChart(trades) {
   document.getElementById('equityRange').textContent = '$'+points[0].toFixed(0)+' → $'+points[points.length-1].toFixed(0);
 }
 
-loadData();
 setInterval(loadData, 10000);
 </script>
 <!-- Your Supabase keys go in config.js (excluded from git) -->
 <script src="config.js"></script>
+<script>loadData();</script>
 </body>
 </html>
