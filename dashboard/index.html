@@ -3,87 +3,77 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trading Bot Dashboard</title>
+<title>Claude Trading Bot</title>
 <style>
   :root {
-    --bg: #0a0a0f; --bg-card: #111118; --bg-card2: #16161f;
-    --border: rgba(255,255,255,0.07); --border-hi: rgba(255,255,255,0.13);
-    --text: #e8e8f0; --text-muted: #7a7a90; --text-dim: #4a4a60;
-    --green: #00d084; --green-dim: rgba(0,208,132,0.12);
-    --red: #ff4d6a; --red-dim: rgba(255,77,106,0.12);
-    --amber: #ffb340; --amber-dim: rgba(255,179,64,0.1);
-    --blue: #4f9eff; --blue-dim: rgba(79,158,255,0.1);
-    --font: 'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+    --bg:#0a0a0f;--bg-card:#111118;--bg-card2:#16161f;
+    --border:rgba(255,255,255,0.07);--border-hi:rgba(255,255,255,0.13);
+    --text:#e8e8f0;--text-muted:#7a7a90;--text-dim:#4a4a60;
+    --green:#00d084;--green-dim:rgba(0,208,132,0.12);
+    --red:#ff4d6a;--red-dim:rgba(255,77,106,0.12);
+    --amber:#ffb340;--amber-dim:rgba(255,179,64,0.1);
+    --font:'JetBrains Mono','Fira Code',monospace;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 13px; line-height: 1.5; min-height: 100vh; }
-  header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--bg-card); }
-  .logo { display: flex; align-items: center; gap: 10px; }
-  .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .logo-name { font-size: 15px; font-weight: 700; letter-spacing: 0.05em; }
-  .logo-sub { font-size: 10px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .badge { padding: 3px 10px; border-radius: 4px; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
-  .badge-paper { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(255,179,64,0.2); }
-  .last-updated { font-size: 11px; color: var(--text-dim); }
-  .kill-switch { display: flex; align-items: center; justify-content: space-between; background: var(--red-dim); border: 1px solid rgba(255,77,106,0.25); padding: 10px 24px; cursor: pointer; transition: background 0.2s; }
-  .kill-switch:hover { background: rgba(255,77,106,0.2); }
-  .kill-switch.halted { background: rgba(255,77,106,0.3); }
-  .kill-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--red); }
-  .kill-status { font-size: 11px; color: var(--text-muted); }
-  .main { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
-  .metrics { display: grid; grid-template-columns: repeat(5,1fr); gap: 12px; }
-  .metric { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
-  .metric-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
-  .metric-value { font-size: 22px; font-weight: 700; }
-  .metric-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
-  .metric-value.pos { color: var(--green); }
-  .metric-value.neg { color: var(--red); }
-  .two-col { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
-  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); }
-  .card-title { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
-  .card-body { padding: 16px; }
-  #equityChart { width: 100%; height: 180px; display: block; }
-  .position-list { display: flex; flex-direction: column; gap: 8px; }
-  .position-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; }
-  .pos-symbol { font-size: 13px; font-weight: 700; }
-  .pos-side { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.08em; text-transform: uppercase; }
-  .side-long { background: var(--green-dim); color: var(--green); }
-  .side-short { background: var(--red-dim); color: var(--red); }
-  .pos-pnl { font-size: 14px; font-weight: 700; }
-  .trade-log { display: flex; flex-direction: column; }
-  .trade-row { display: grid; grid-template-columns: 90px 60px 50px 1fr; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--border); align-items: start; font-size: 11px; }
-  .trade-row:last-child { border-bottom: none; }
-  .trade-row:hover { background: var(--bg-card2); }
-  .trade-ts { color: var(--text-dim); font-size: 10px; }
-  .trade-sym { font-weight: 600; }
-  .trade-buy { color: var(--green); }
-  .trade-sell { color: var(--red); }
-  .trade-rationale { color: var(--text-muted); font-size: 10px; line-height: 1.4; }
-  .audit-log { max-height: 200px; overflow-y: auto; }
-  .audit-row { padding: 7px 16px; border-bottom: 1px solid var(--border); font-size: 10px; display: flex; align-items: start; gap: 8px; }
-  .audit-row:last-child { border-bottom: none; }
-  .audit-blocked { background: rgba(255,77,106,0.04); }
-  .audit-tag { padding: 1px 5px; border-radius: 3px; font-size: 9px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-  .tag-ok { background: var(--green-dim); color: var(--green); }
-  .tag-blocked { background: var(--red-dim); color: var(--red); }
-  .audit-text { color: var(--text-muted); flex: 1; }
-  .empty { padding: 32px; text-align: center; color: var(--text-dim); font-size: 11px; }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;line-height:1.5;min-height:100vh}
+  header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--bg-card)}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .logo-name{font-size:15px;font-weight:700;letter-spacing:.05em}
+  .logo-sub{font-size:10px;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase}
+  .header-right{display:flex;align-items:center;gap:16px}
+  .badge{padding:3px 10px;border-radius:4px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+  .badge-paper{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,179,64,0.2)}
+  .last-updated{font-size:11px;color:var(--text-dim)}
+  .kill-switch{display:flex;align-items:center;justify-content:space-between;background:var(--red-dim);border:1px solid rgba(255,77,106,0.25);padding:10px 24px;cursor:pointer;transition:background .2s}
+  .kill-switch:hover{background:rgba(255,77,106,0.2)}
+  .kill-switch.halted{background:rgba(255,77,106,0.3)}
+  .kill-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--red)}
+  .kill-status{font-size:11px;color:var(--text-muted)}
+  .main{padding:20px 24px;display:flex;flex-direction:column;gap:16px}
+  .metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  .metric{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+  .metric-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+  .metric-value{font-size:22px;font-weight:700}
+  .metric-sub{font-size:10px;color:var(--text-dim);margin-top:2px}
+  .metric-value.pos{color:var(--green)}.metric-value.neg{color:var(--red)}
+  .two-col{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .card-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+  .card-title{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  .card-body{padding:16px}
+  #equityChart{width:100%;height:180px;display:block}
+  .position-list{display:flex;flex-direction:column;gap:8px}
+  .position-item{display:flex;align-items:center;justify-content:space-between;background:var(--bg-card2);border:1px solid var(--border);border-radius:6px;padding:10px 12px}
+  .pos-symbol{font-size:13px;font-weight:700}
+  .pos-side{font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.08em;text-transform:uppercase}
+  .side-long{background:var(--green-dim);color:var(--green)}.side-short{background:var(--red-dim);color:var(--red)}
+  .pos-pnl{font-size:14px;font-weight:700}
+  .trade-log{display:flex;flex-direction:column}
+  .trade-row{display:grid;grid-template-columns:90px 60px 50px 1fr;gap:8px;padding:8px 16px;border-bottom:1px solid var(--border);align-items:start;font-size:11px}
+  .trade-row:last-child{border-bottom:none}
+  .trade-row:hover{background:var(--bg-card2)}
+  .trade-ts{color:var(--text-dim);font-size:10px}
+  .trade-sym{font-weight:600}
+  .trade-buy{color:var(--green)}.trade-sell{color:var(--red)}
+  .trade-rationale{color:var(--text-muted);font-size:10px;line-height:1.4}
+  .audit-log{max-height:200px;overflow-y:auto}
+  .audit-row{padding:7px 16px;border-bottom:1px solid var(--border);font-size:10px;display:flex;align-items:start;gap:8px}
+  .audit-row:last-child{border-bottom:none}
+  .audit-blocked{background:rgba(255,77,106,0.04)}
+  .audit-tag{padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700;flex-shrink:0;margin-top:1px}
+  .tag-ok{background:var(--green-dim);color:var(--green)}.tag-blocked{background:var(--red-dim);color:var(--red)}
+  .audit-text{color:var(--text-muted);flex:1}
+  .empty{padding:32px;text-align:center;color:var(--text-dim);font-size:11px}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:2px}
 </style>
 </head>
 <body>
 <header>
   <div class="logo">
     <div class="logo-dot" id="statusDot"></div>
-    <div>
-      <div class="logo-name">CLAUDE TRADING BOT</div>
-      <div class="logo-sub">Alpaca Paper · US Equities</div>
-    </div>
+    <div><div class="logo-name">CLAUDE TRADING BOT</div><div class="logo-sub">Alpaca Paper · US Equities</div></div>
   </div>
   <div class="header-right">
     <span class="badge badge-paper">PAPER</span>
@@ -130,11 +120,32 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// API base — same origin when served from Railway, or set window.API_BASE from config.js
-const API = window.API_BASE || (window.RAILWAY_API) || '';
+// ─── CONFIG — set these in config.js ─────────────────────────────────────────
+// window.SUPABASE_URL and window.SUPABASE_ANON_KEY must be set in config.js
+// config.js is excluded from git so your keys stay private
 
 let equityChart = null;
 let isHalted = false;
+
+function sb(table, params='') {
+  const url = window.SUPABASE_URL;
+  const key = window.SUPABASE_ANON_KEY;
+  if (!url || !key) return Promise.resolve([]);
+  return fetch(`${url}/rest/v1/${table}?${params}`, {
+    headers: { apikey: key, Authorization: 'Bearer ' + key }
+  }).then(r => r.ok ? r.json() : []).catch(() => []);
+}
+
+function sbInsert(table, data) {
+  const url = window.SUPABASE_URL;
+  const key = window.SUPABASE_ANON_KEY;
+  if (!url || !key) return;
+  fetch(`${url}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body: JSON.stringify(data)
+  }).catch(() => {});
+}
 
 async function toggleKillSwitch() {
   isHalted = !isHalted;
@@ -143,7 +154,7 @@ async function toggleKillSwitch() {
   if (isHalted) {
     sw.classList.add('halted');
     sw.querySelector('.kill-label').textContent = '🔴 Kill Switch — TRADING HALTED';
-    document.getElementById('killStatus').textContent = 'HALTED — bot will stop at next cycle';
+    document.getElementById('killStatus').textContent = 'HALTED — bot stops at next cycle';
     dot.style.cssText = 'background:var(--red);box-shadow:0 0 8px var(--red)';
   } else {
     sw.classList.remove('halted');
@@ -151,46 +162,40 @@ async function toggleKillSwitch() {
     document.getElementById('killStatus').textContent = 'ACTIVE — trading enabled';
     dot.style.cssText = 'background:var(--green);box-shadow:0 0 8px var(--green)';
   }
-  await fetch(`${API}/ingest`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-ingest-secret': window.INGEST_SECRET || '' },
-    body: JSON.stringify({ type: 'halt', data: { halted: isHalted } })
-  }).catch(() => {});
-}
-
-async function api(endpoint) {
-  const r = await fetch(`${API}${endpoint}`);
-  if (!r.ok) throw new Error(r.status);
-  return r.json();
+  sbInsert('halt_events', { halted: isHalted });
 }
 
 async function loadData() {
+  if (!window.SUPABASE_URL) {
+    document.getElementById('lastUpdated').textContent = '⚠ Add Supabase keys to dashboard/config.js';
+    return;
+  }
   try {
-    const [trades, audit, navRows] = await Promise.all([
-      api('/api/trades'),
-      api('/api/audit'),
-      api('/api/nav'),
+    const [trades, audit, nav] = await Promise.all([
+      sb('trades', 'order=ts.desc&limit=50'),
+      sb('audit_log', 'order=ts.desc&limit=30'),
+      sb('nav_history', 'order=ts.desc&limit=100'),
     ]);
 
     document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
 
-    // NAV
-    if (navRows.length) {
-      const latest = navRows[0];
-      const eq = parseFloat(latest.equity || 0);
-      const pnl = parseFloat(latest.day_pnl || 0);
-      document.getElementById('nav').textContent = '$' + eq.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const pnlEl = document.getElementById('dayPnl');
-      pnlEl.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2);
-      pnlEl.className = 'metric-value ' + (pnl >= 0 ? 'pos' : 'neg');
+    // NAV + Day PnL
+    if (nav.length) {
+      const n = nav[0];
+      const eq = parseFloat(n.equity || 0);
+      const pnl = parseFloat(n.day_pnl || 0);
+      document.getElementById('nav').textContent = '$' + eq.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+      const el = document.getElementById('dayPnl');
+      el.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(2);
+      el.className = 'metric-value ' + (pnl >= 0 ? 'pos' : 'neg');
     }
 
     // Trades
     document.getElementById('totalTrades').textContent = trades.length;
     if (trades.length) {
-      const wins = trades.filter(t => (t.pnl || 0) > 0).length;
-      document.getElementById('winRate').textContent = 'Win rate: ' + Math.round(wins / trades.length * 100) + '%';
-      renderTradeLog(trades.slice(0, 20));
+      const wins = trades.filter(t => (t.pnl||0) > 0).length;
+      document.getElementById('winRate').textContent = 'Win rate: ' + Math.round(wins/trades.length*100) + '%';
+      renderTradeLog(trades.slice(0,20));
       renderEquityChart([...trades].reverse());
     } else {
       document.getElementById('winRate').textContent = 'no trades yet';
@@ -198,13 +203,12 @@ async function loadData() {
     }
 
     // Audit
-    const today = new Date().toISOString().slice(0, 10);
-    const blocked = audit.filter(a => a.blocked && (a.ts || '').startsWith(today)).length;
-    document.getElementById('riskBlocked').textContent = blocked;
-    renderAuditLog(audit.slice(0, 30));
+    const today = new Date().toISOString().slice(0,10);
+    document.getElementById('riskBlocked').textContent = audit.filter(a => a.blocked && (a.ts||'').startsWith(today)).length;
+    renderAuditLog(audit);
 
-  } catch (e) {
-    document.getElementById('lastUpdated').textContent = 'Connection error — ' + e.message;
+  } catch(e) {
+    document.getElementById('lastUpdated').textContent = 'Error: ' + e.message;
   }
 }
 
@@ -214,9 +218,9 @@ function renderTradeLog(trades) {
   el.innerHTML = trades.map(t => `
     <div class="trade-row">
       <span class="trade-ts">${new Date(t.ts).toLocaleString('en-US',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
-      <span class="trade-sym">${t.symbol || '—'}</span>
-      <span class="${t.side === 'buy' ? 'trade-buy' : 'trade-sell'}">${(t.side||'—').toUpperCase()}</span>
-      <span class="trade-rationale">${t.rationale || '—'}</span>
+      <span class="trade-sym">${t.symbol||'—'}</span>
+      <span class="${t.side==='buy'?'trade-buy':'trade-sell'}">${(t.side||'—').toUpperCase()}</span>
+      <span class="trade-rationale">${t.rationale||'—'}</span>
     </div>`).join('');
 }
 
@@ -224,9 +228,9 @@ function renderAuditLog(entries) {
   const el = document.getElementById('auditLog');
   if (!entries.length) { el.innerHTML = '<div class="empty">No entries yet</div>'; return; }
   el.innerHTML = entries.map(e => `
-    <div class="audit-row ${e.blocked ? 'audit-blocked' : ''}">
-      <span class="audit-tag ${e.blocked ? 'tag-blocked' : 'tag-ok'}">${e.blocked ? 'BLOCK' : 'OK'}</span>
-      <span class="audit-text">${e.tool} ${e.symbol ? '— ' + e.symbol : ''} ${e.blocked ? '— ' + e.result : ''}</span>
+    <div class="audit-row ${e.blocked?'audit-blocked':''}">
+      <span class="audit-tag ${e.blocked?'tag-blocked':'tag-ok'}">${e.blocked?'BLOCK':'OK'}</span>
+      <span class="audit-text">${e.tool}${e.symbol?' — '+e.symbol:''}${e.blocked?' — '+e.result:''}</span>
     </div>`).join('');
 }
 
@@ -234,21 +238,22 @@ function renderEquityChart(trades) {
   const ctx = document.getElementById('equityChart').getContext('2d');
   let equity = 100000;
   const points = [equity];
-  trades.forEach(t => { equity += (t.pnl || 0); points.push(+(equity.toFixed(2))); });
-  const isPos = points[points.length - 1] >= points[0];
+  trades.forEach(t => { equity += (t.pnl||0); points.push(+(equity.toFixed(2))); });
+  const isPos = points[points.length-1] >= points[0];
   const color = isPos ? '#00d084' : '#ff4d6a';
   if (equityChart) equityChart.destroy();
   equityChart = new Chart(ctx, {
     type: 'line',
-    data: { labels: points.map((_, i) => i === 0 ? 'Start' : '#' + i), datasets: [{ data: points, borderColor: color, backgroundColor: isPos ? 'rgba(0,208,132,0.08)' : 'rgba(255,77,106,0.08)', borderWidth: 2, fill: true, tension: 0.3, pointRadius: 0, pointHoverRadius: 4 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#7a7a90', font: { size: 10 }, callback: v => '$' + v.toFixed(0) } } } }
+    data: { labels: points.map((_,i) => i===0?'Start':'#'+i), datasets:[{ data:points, borderColor:color, backgroundColor:isPos?'rgba(0,208,132,0.08)':'rgba(255,77,106,0.08)', borderWidth:2, fill:true, tension:0.3, pointRadius:0, pointHoverRadius:4 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{display:false}, y:{display:true, grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#7a7a90',font:{size:10},callback:v=>'$'+v.toFixed(0)}} } }
   });
-  document.getElementById('equityRange').textContent = '$' + points[0].toFixed(0) + ' → $' + points[points.length - 1].toFixed(0);
+  document.getElementById('equityRange').textContent = '$'+points[0].toFixed(0)+' → $'+points[points.length-1].toFixed(0);
 }
 
 loadData();
 setInterval(loadData, 10000);
 </script>
-<script src="/config.js" onerror=""></script>
+<!-- Your Supabase keys go in config.js (excluded from git) -->
+<script src="config.js"></script>
 </body>
 </html>

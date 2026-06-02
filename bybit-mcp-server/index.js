@@ -18,27 +18,6 @@ const path = require("path");
 const readline = require("readline");
 const os = require("os");
 
-// ─── RAILWAY INGEST ───────────────────────────────────────────────────────────
-const RAILWAY_URL = process.env.RAILWAY_URL || ""; // e.g. https://your-bot.railway.app
-const INGEST_SECRET = process.env.INGEST_SECRET || "";
-
-function railwayIngest(type, data) {
-  if (!RAILWAY_URL || !INGEST_SECRET) return;
-  const body = JSON.stringify({ type, data });
-  const url = new URL(RAILWAY_URL + "/ingest");
-  const req = https.request({
-    hostname: url.hostname, path: "/ingest", method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-ingest-secret": INGEST_SECRET,
-      "Content-Length": Buffer.byteLength(body),
-    }
-  }, () => {});
-  req.on("error", () => {});
-  req.write(body);
-  req.end();
-}
-
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || "";
@@ -48,8 +27,7 @@ function supabaseInsert(table, data) {
   const body = JSON.stringify(data);
   const url = new URL(`${SUPABASE_URL}/rest/v1/${table}`);
   const req = https.request({
-    hostname: url.hostname, path: url.pathname,
-    method: "POST",
+    hostname: url.hostname, path: url.pathname, method: "POST",
     headers: {
       "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY,
       "Content-Type": "application/json", "Prefer": "return=minimal",
@@ -88,7 +66,7 @@ function audit(tool, input, result, blocked = false) {
   ensureStateDir();
   const entry = { ts: new Date().toISOString(), tool, input, blocked, result: blocked ? result : "ok" };
   fs.appendFileSync(AUDIT_LOG, JSON.stringify(entry) + "\n");
-  railwayIngest("audit", { ts: entry.ts, tool, symbol: input?.symbol || null, blocked, result: entry.result });
+  supabaseInsert("audit_log", { ts: entry.ts, tool, symbol: input?.symbol || null, blocked, result: entry.result });
 }
 
 function alpacaRequest(hostname, method, path_, body = null) {
@@ -428,23 +406,23 @@ async function handleTool(name, input) {
 
 function appendTradeState(input, res) {
   try {
-    const tradeFile = path.join(STATE_DIR, "trades.jsonl");
-    fs.appendFileSync(
-      tradeFile,
-      JSON.stringify({
-        ts: new Date().toISOString(),
-        symbol: input.symbol,
-        side: input.side,
-        qty: input.qty || input.notional,
-        order_type: input.order_type,
-        limit_price: input.limit_price,
-        stop_loss_price: input.stop_loss_price,
-        take_profit_price: input.take_profit_price,
-        rationale: input.rationale,
-        order_id: res?.id,
-        status: res?.status,
-      }) + "\n"
-    );
+    const record = {
+      ts: new Date().toISOString(),
+      symbol: input.symbol,
+      side: input.side,
+      qty: input.qty || input.notional,
+      order_type: input.order_type,
+      limit_price: input.limit_price,
+      stop_loss_price: input.stop_loss_price,
+      take_profit_price: input.take_profit_price,
+      rationale: input.rationale,
+      order_id: res?.id,
+      status: res?.status,
+      pnl: 0,
+    };
+    ensureStateDir();
+    fs.appendFileSync(path.join(STATE_DIR, "trades.jsonl"), JSON.stringify(record) + "\n");
+    supabaseInsert("trades", record);
   } catch {}
 }
 

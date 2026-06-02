@@ -4,9 +4,11 @@
       "command": "node",
       "args": ["C:\\Users\\DEV GOEL\\OneDrive\\Desktop\\trading-bot\\bybit-mcp-server\\index.js"],
       "env": {
-        "ALPACA_API_KEY": "YOUR_PAPER_API_KEY",
-        "ALPACA_API_SECRET": "YOUR_PAPER_API_SECRET",
-        "ALPACA_PAPER": "true"
+        "ALPACA_API_KEY": "PKQMTEW6LLD5PYQZIQXXKWAIQF",
+        "ALPACA_API_SECRET": "4kZBeD9nDLqRxPrtJRLdSziGLa5fAhRAa4wAj7kKyvU3",
+        "ALPACA_PAPER": "true",
+        "SUPABASE_URL": "https://xnugzbjxqhushzrixumh.supabase.co",
+        "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhudWd6Ymp4cWh1c2h6cml4dW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNjc3ODUsImV4cCI6MjA5NTk0Mzc4NX0.ns8gbRP74b4LcT93rsVPwusr9-WIFYhUFh7hlPWssmI"
       }
     }
   }
