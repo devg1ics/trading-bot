@@ -1,0 +1,10 @@
+{
+  "name": "bybit-trading-mcp",
+  "version": "1.0.0",
+  "description": "Bybit MCP Server for Claude Code trading bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {}
+}

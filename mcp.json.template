@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "alpaca-trading": {
+      "command": "node",
+      "args": ["C:\\Users\\DEV GOEL\\OneDrive\\Desktop\\trading-bot\\bybit-mcp-server\\index.js"],
+      "env": {
+        "ALPACA_API_KEY": "YOUR_PAPER_API_KEY",
+        "ALPACA_API_SECRET": "YOUR_PAPER_API_SECRET",
+        "ALPACA_PAPER": "true"
+      }
+    }
+  }
+}
